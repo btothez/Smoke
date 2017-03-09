@@ -82,7 +82,7 @@
                 d = dist(x,y,centerX,centerY);
                 temp = Math.min((1/d), .05) 
                 // a(x,y, (1/d));
-                a(x,y, .05);
+                a(x,y, .02);
             }
         }
     }
@@ -115,20 +115,21 @@
         advect(u0x, u0y, u0x, u1x, step);
         advect(u0x, u0y, u0y, u1y, step);
 
-        addSmokeStack(s0, t0, u1y);
         addMouseForce(u1x, u1y);
+        addSmokeStack(s0, t0, u1x, u1y);
+        addSlightGravity(u1x, u1y, s0);
+        addBuoyancy(u1y, t0, s0, step);
+
+
+        // needs an even number of iterations
+        computeDivergence(u1x, u1y, div);
+        fastjacobi(p0, p1, div, -1, 0.20, 86);
+        subtractPressureGradient(u1x, u1y, p1);
+
 
         advect(u1x, u1y, s0, s1, step);
         advect(u1x, u1y, t0, t1, step);
 
-        addSlightGravity(u1x, u1y, s1);
-        addBuoyancy(u1y, t1, s1, step);
-
-        computeDivergence(u1x, u1y, div);
-
-        // needs an even number of iterations
-        fastjacobi(p0, p1, div, -1, 0.20, 106);
-        subtractPressureGradient(u1x, u1y, p0);
         var aux = p0;
         p0 = p1;
         p1 = aux;
@@ -155,7 +156,7 @@
             ydist = Math.abs(y1 - y2);
         return Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
     }
-    function addSmokeStack(s, t, uy) {
+    function addSmokeStack(s, t, ux, uy) {
         // middle fifth of the width
         var w = Math.floor(WIDTH / 5)
         var h = Math.floor(HEIGHT / 5)
@@ -167,10 +168,8 @@
                 if (dist(x,y,centerX,centerY) < 5) {
                     s(x,y,0.7);
                     t(x,y,.5);
-                    uy(x,y,-.3);
-                }
-                if ((x == centerX) && (y == centerY - 10)) {
-
+                    // ux(x,y, (x-centerX) / 10)
+                    // uy(x,y, (y-centerY) / 10 );
                 }
             }
         }
@@ -179,12 +178,14 @@
         lastMouseY = mouseY;
 
     function addBuoyancy(uy, t, s, step){
-        var kappa = -0.4;
+        var kappa = -0.4,
+            temp_diff = 0;
             // ambient = .05;
         for(var x = 0; x < WIDTH; x++) {
             for(var y = 1; y < HEIGHT; y++) {
 
-                uy(x,y, uy(x,y) + (-.1 * ( t(x,y) - a(x,y) )));
+                temp_diff = Math.max(t(x,y) - a(x,y), 0);
+                uy(x,y, uy(x,y) + -.1 * temp_diff);
             }
         }
     }
@@ -193,7 +194,7 @@
         var mid = 0.01;
         for(var x = 0; x < WIDTH; x++) {
             for(var y = 1; y <HEIGHT; y++) {
-                uy(x,y,uy(x,y) + (0.01 * s(x,y)));
+                uy(x,y,uy(x,y) + (0.05 * s(x,y)));
             }
         }
     }
@@ -368,12 +369,12 @@
             for(var x = 0; x < WIDTH; x++) {
                 pi = (y*WIDTH+x);
                 di = pi*4;
-                clr = s(x,y) * 255;
-                tclr = p(x,y) * 255;
+                sclr = s(x,y) * 255;
+                tclr = t(x,y) * 255;
                 uclr = ( (.5 * Math.abs(ux(x, y))) + (.5 * Math.abs(uy(x,y)))) *255;
                 d[di+0] = uclr;
-                d[di+1] = clr;
-                d[di+2] = clr;
+                d[di+1] = sclr;
+                d[di+2] = tclr;
             }
         }
         ctx.putImageData(imageData, 0, 0);
