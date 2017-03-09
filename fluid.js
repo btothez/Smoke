@@ -48,9 +48,14 @@
         tempField1 = new Float32Array(WIDTH*HEIGHT),
         t1 = sampler(tempField1, WIDTH, HEIGHT, 1, 0),
 
+        ambientTempField = new Float32Array(WIDTH*HEIGHT),
+        a = sampler(ambientTempField, WIDTH, HEIGHT, 1, 0),
+
         step = 4.0;
 
-    console.log(imageData);
+    // Set Ambient Temp
+    setAmbientTemp(a);
+
 
     for(var i = 0; i < pressureField0.length; i++) {
         pressureField0[i] = 0;
@@ -61,6 +66,26 @@
         velocityField1[i] = velocityField0[i];
     }
     velocityboundary(u0x, u0y);
+
+    function setAmbientTemp(a) {
+        // middle fifth of the width
+        var w = Math.floor(WIDTH / 5)
+        var h = Math.floor(HEIGHT / 5)
+        centerX = Math.floor(WIDTH / 2) 
+        centerY = Math.floor(h/2) + (h * 4)
+        var d = 0,
+            temp = 0;
+
+        for(var x = 0; x < WIDTH; x++) {
+            for(var y = 1; y < HEIGHT; y++) {
+
+                d = dist(x,y,centerX,centerY);
+                temp = Math.min((1/d), .05) 
+                // a(x,y, (1/d));
+                a(x,y, .05);
+            }
+        }
+    }
 
     // a -> array
     // Returns a function that gets you to the right offset of the array you pass it
@@ -90,18 +115,19 @@
         advect(u0x, u0y, u0x, u1x, step);
         advect(u0x, u0y, u0y, u1y, step);
 
-        addSmokeStack(s0, t0);
-        addMouseForce(u0x, u1y);
+        addSmokeStack(s0, t0, u1y);
+        addMouseForce(u1x, u1y);
 
-        addSlightGravity(u0x, u0y);
-        addBuoyancy(u0y, t0, s0, step);
+        advect(u1x, u1y, s0, s1, step);
+        advect(u1x, u1y, t0, t1, step);
 
-        advect(u0x, u0y, s0, s1, step);
-        advect(u0x, u0y, t0, t1, step);
+        addSlightGravity(u1x, u1y, s1);
+        addBuoyancy(u1y, t1, s1, step);
+
         computeDivergence(u1x, u1y, div);
 
         // needs an even number of iterations
-        fastjacobi(p0, p1, div, -1, 0.20, 36);
+        fastjacobi(p0, p1, div, -1, 0.20, 106);
         subtractPressureGradient(u1x, u1y, p0);
         var aux = p0;
         p0 = p1;
@@ -129,20 +155,22 @@
             ydist = Math.abs(y1 - y2);
         return Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
     }
-    function addSmokeStack(s, t) {
+    function addSmokeStack(s, t, uy) {
         // middle fifth of the width
         var w = Math.floor(WIDTH / 5)
         var h = Math.floor(HEIGHT / 5)
         centerX = Math.floor(WIDTH / 2) 
         centerY = Math.floor(h/2) + (h * 4)
 
-// console.log(centerX);
-// console.log(centerY);
         for(var x = w*2; x < w*3; x++) {
             for(var y = h*4; y < HEIGHT; y++) {
                 if (dist(x,y,centerX,centerY) < 5) {
                     s(x,y,0.7);
-                    t(x,y,0.2);
+                    t(x,y,.5);
+                    uy(x,y,-.3);
+                }
+                if ((x == centerX) && (y == centerY - 10)) {
+
                 }
             }
         }
@@ -151,24 +179,21 @@
         lastMouseY = mouseY;
 
     function addBuoyancy(uy, t, s, step){
-        var kappa = -0.4,
-            ambient = .05;
-            former_y = 0;
-
+        var kappa = -0.4;
+            // ambient = .05;
         for(var x = 0; x < WIDTH; x++) {
             for(var y = 1; y < HEIGHT; y++) {
-                former_y = uy(x,y);
 
-                uy(x,y, former_y + ( (t(x,y) - ambient)  + (kappa * s(x,y))));
+                uy(x,y, uy(x,y) + (-.1 * ( t(x,y) - a(x,y) )));
             }
         }
     }
 
-    function addSlightGravity(ux, uy){
+    function addSlightGravity(ux, uy, s){
         var mid = 0.01;
         for(var x = 0; x < WIDTH; x++) {
             for(var y = 1; y <HEIGHT; y++) {
-                uy(x,y,0.001);
+                uy(x,y,uy(x,y) + (0.01 * s(x,y)));
             }
         }
     }
@@ -346,11 +371,9 @@
                 clr = s(x,y) * 255;
                 tclr = p(x,y) * 255;
                 uclr = ( (.5 * Math.abs(ux(x, y))) + (.5 * Math.abs(uy(x,y)))) *255;
-                // d[di+0] = p(x, y)*128;
                 d[di+0] = uclr;
                 d[di+1] = clr;
                 d[di+2] = clr;
-                // d[di+3] = 0;
             }
         }
         ctx.putImageData(imageData, 0, 0);
@@ -372,7 +395,4 @@
         draw(u0x, u0y, p0, s0, t0);
         requestAnimationFrame(animate);
     })();
-
-
-
 })();
