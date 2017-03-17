@@ -5,7 +5,8 @@
         HEIGHT = canvas.height,
         sx = canvas.width/canvas.clientWidth,
         sy = canvas.height/canvas.clientHeight,
-        ctx = canvas.getContext('2d');
+        ctx = canvas.getContext('2d')
+        time = 0;
 
     var mouseX = 0, mouseY = 0;
     (function(){
@@ -156,20 +157,35 @@
             ydist = Math.abs(y1 - y2);
         return Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
     }
+
+    function multByPi(v) {
+        return v * ((Math.sin((time * 2 * Math.PI) / 200) * 0.5) + 0.5);
+
+    }
+
     function addSmokeStack(s, t, ux, uy) {
         // middle fifth of the width
-        var w = Math.floor(WIDTH / 5)
-        var h = Math.floor(HEIGHT / 5)
-        centerX = Math.floor(WIDTH / 2) 
-        centerY = Math.floor(h/2) + (h * 4)
+        var w = Math.floor(WIDTH / 5);
+        var h = Math.floor(HEIGHT / 5);
+        var centerX = Math.floor(WIDTH / 2);
+        var centerY = Math.floor(h/2) + (h * 4);
+        var distance = 0;
 
         for(var x = w*2; x < w*3; x++) {
             for(var y = h*4; y < HEIGHT; y++) {
-                if (dist(x,y,centerX,centerY) < 5) {
-                    s(x,y,0.7);
-                    t(x,y,.5);
-                    // ux(x,y, (x-centerX) / 10)
-                    // uy(x,y, (y-centerY) / 10 );
+                distance = dist(x,y, centerX, centerY);
+                if (distance < 5 ) {
+                    // t(x,y,.5) ;
+                    t(x, y, multByPi(0.5))
+                    s(x, y, multByPi(0.5))
+                }
+                if (distance < 3) {
+                    // s(x,y,0.5);
+                    // s(x, y, multByPi(0.5))
+                }
+                if ((distance > 15) && (distance < 27))  {
+                    ux(x,y, (x-centerX) / 1000);
+                    uy(x,y, (y-centerY) / 1000);
                 }
             }
         }
@@ -185,7 +201,7 @@
             for(var y = 1; y < HEIGHT; y++) {
 
                 temp_diff = Math.max(t(x,y) - a(x,y), 0);
-                uy(x,y, uy(x,y) + -.1 * temp_diff);
+                uy(x,y, uy(x,y) + -.08 * temp_diff);
             }
         }
     }
@@ -392,6 +408,7 @@
                   });
 
     (function animate(){
+        time += 1;
         simulate()
         draw(u0x, u0y, p0, s0, t0);
         requestAnimationFrame(animate);
