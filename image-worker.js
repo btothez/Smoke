@@ -8,6 +8,12 @@ var width,
 
 var min_x = min_y = max_x = max_y = 0;
 
+function dist(x1, y1, x2,y2) {
+    var xdist = Math.abs(x1 - x2),
+        ydist = Math.abs(y1 - y2);
+    return Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
+}
+
 function set_box_limits() {
     min_x = ~~(width/2) - 8;
     min_y = ~~(height/2) - 8
@@ -106,11 +112,11 @@ onmessage = function(event) {
 
     var x = y = index = val = 0;
     for (y = min_y; y <= max_y; y++) {
-        dst[indexer(min_x, y)] = dst[indexer(max_x, y)] = 155;
+        dst[indexer(min_x, y)] = dst[indexer(max_x, y)] = 200;
     }
     
     for (x = min_x; x <= max_x; x++) {
-        dst[indexer(x, min_y)] = dst[indexer(x, max_y)] = 155;
+        dst[indexer(x, min_y)] = dst[indexer(x, max_y)] = 200;
     }
 
     vector = getMatrixPieces();
@@ -129,6 +135,7 @@ onmessage = function(event) {
     // }
 
     postMessage({
-        dstData: imageData
+        dstData: imageData,
+        vector: vector
     });
 };

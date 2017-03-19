@@ -6,11 +6,16 @@
 </head>
 <body>
                 
-    <video id="video-stream" style="display:none;" width=545 height=344></video>
-    <canvas id="canvas-video" width=545 height=344 style="display:none"></canvas>
-    <canvas id="canvas-effects" width=545 height=344></canvas>
+    <video id="video-stream" style="display:none;" width=512 height=512></video>
+    <canvas id="canvas-video" width=512 height=512 style="display:none"></canvas>
+    <canvas id="canvas-effects" width=512 height=512></canvas>
+    <canvas id="c" width=128 height=128 style="width:512px;height:512px;float: left;"></canvas>
+
+    <div id="content">
+    </div>
 
     <script type="text/javascript">
+        var vector = [0, 0];
         (function(){
             var video = document.getElementById('video-stream'),
                 canvas = document.getElementById('canvas-video'),
@@ -25,6 +30,7 @@
             /* Setup WebWorker messaging */
             processor.onmessage = function(event){
                 ctxEffects.putImageData(event.data.dstData, 0, 0);
+                vector = event.data.vector;
             };
 
             /* Setup video stream and canvas */
@@ -37,28 +43,33 @@
             navigator.getUserMedia({video:true}, function(stream){
                 video.src = URL.createObjectURL(stream);
                 video.play();
-                setInterval(render, 10);
+                setInterval(render, 5);
             }, function(error){
                 console.log('error', error);
             });
 
-            // function sampler(a, width, height, stride, offset){
-            //     var f = function(x, y, value) {
-            //         x = (x < 0 ? 0 : (x > width-1 ? width-1 : x))|0;
-            //         y = (y < 0 ? 0 : (y > height-1 ? height-1 : y))|0;
-            //         if(value !== undefined){
-            //             a[(x+y*width)*stride+offset] = value;
-            //         }
-            //         else {
-            //             return a[(x+y*width)*stride+offset];
-            //         }
-            //     };
-            //     f.a = a;
-            //     return f;
-            // }
+function indexer(x, y) {
+    var index = (y * w * 4) + (x * 4);
+    return index;
+}
+function reverseIndexer(x, y) {
+    var index = (y * w * 4) + ((w - x) * 4);
+    return index;
+}
+function getReverseXY(i) {
+   var real_i = i / 4; 
+   var y = ~~(real_i / w);
+   var x = real_i % w;
+   x = w - x;
+   return [x,y];
+}
+
             var render = function(){
                 ctx.drawImage(video, 0, 0, w, h);
+                ctx.scale(-1, 1)
                 var srcData = ctx.getImageData(0,0,w,h);
+                var new_arr = [];
+                var co = [];
 
                 processor.postMessage({
                     imageData: srcData,
@@ -68,6 +79,7 @@
             };
         })();
     </script>
+    <script src=fluid.js></script>
 
 </body>
 </html>

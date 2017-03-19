@@ -116,6 +116,7 @@
         advect(u0x, u0y, u0x, u1x, step);
         advect(u0x, u0y, u0y, u1y, step);
 
+        addMotionVector(u1x, u1y);
         addMouseForce(u1x, u1y);
         addSmokeStack(s0, t0, u1x, u1y);
         addSlightGravity(u1x, u1y, s0);
@@ -211,6 +212,15 @@
         for(var x = 0; x < WIDTH; x++) {
             for(var y = 1; y <HEIGHT; y++) {
                 uy(x,y,uy(x,y) + (0.05 * s(x,y)));
+            }
+        }
+    }
+
+    function addMotionVector(ux, uy){
+        for (var x = ((WIDTH / 2) - 3); x < ((WIDTH / 2) + 3); x++) {
+            for (var y = (HEIGHT / 2) - 3; y < (HEIGHT / 2) + 3; y++) {
+                ux(x, y, ux(x, y)+vector[0]*2);
+                uy(x, y, uy(x, y)+vector[1]*2);
             }
         }
     }
@@ -409,7 +419,7 @@
 
     (function animate(){
         time += 1;
-        simulate()
+        simulate();
         draw(u0x, u0y, p0, s0, t0);
         requestAnimationFrame(animate);
     })();
