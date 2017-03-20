@@ -6,9 +6,9 @@
 </head>
 <body>
                 
-    <video id="video-stream" style="display:none;" width=512 height=512></video>
-    <canvas id="canvas-video" width=512 height=512 style="display:none"></canvas>
-    <canvas id="canvas-effects" width=512 height=512></canvas>
+    <video id="video-stream" style="display:none;" width=128 height=128></video>
+    <canvas id="canvas-video" width=128 height=128 style="display:none"></canvas>
+    <canvas id="canvas-effects" width=128 height=128></canvas>
     <canvas id="c" width=128 height=128 style="width:512px;height:512px;float: left;"></canvas>
 
     <div id="content">
@@ -43,17 +43,22 @@
             navigator.getUserMedia({video:true}, function(stream){
                 video.src = URL.createObjectURL(stream);
                 video.play();
-                setInterval(render, 5);
+                setInterval(render, 3);
             }, function(error){
                 console.log('error', error);
             });
-
+function getCoord(i) {
+   var real_i = i / 4; 
+   var y = ~~(real_i / w);
+   var x = real_i % w;
+   return [x,y];
+}
 function indexer(x, y) {
     var index = (y * w * 4) + (x * 4);
     return index;
 }
 function reverseIndexer(x, y) {
-    var index = (y * w * 4) + ((w - x) * 4);
+    var index = (y * w * 4) + ((w - x - 3) * 4);
     return index;
 }
 function getReverseXY(i) {
@@ -70,6 +75,9 @@ function getReverseXY(i) {
                 var srcData = ctx.getImageData(0,0,w,h);
                 var new_arr = [];
                 var co = [];
+                var reverse_index = 0;
+                var j = 0;
+                var old_arr = srcData.data;
 
                 processor.postMessage({
                     imageData: srcData,

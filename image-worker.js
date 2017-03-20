@@ -8,6 +8,18 @@ var width,
 
 var min_x = min_y = max_x = max_y = 0;
 
+function reverseIndexer(x, y) {
+    var index = (y * width * 4) + ((width - x - 3) * 4);
+    return index;
+}
+
+function getCoord(i) {
+   var real_i = i / 4; 
+   var y = ~~(real_i / width);
+   var x = real_i % width;
+   return [x,y];
+}
+
 function dist(x1, y1, x2,y2) {
     var xdist = Math.abs(x1 - x2),
         ydist = Math.abs(y1 - y2);
@@ -106,6 +118,20 @@ onmessage = function(event) {
     }
 
     dst = imageData.data;
+    var new_arr = [];
+
+    for (var i = 0; i < dst.length; i += 4 ) {
+        coord = getCoord(i);
+        reverse_index = reverseIndexer(coord[0], coord[1]);
+
+        new_arr[i] = dst[reverse_index];
+        new_arr[i + 1] = dst[reverse_index + 1];
+        new_arr[i + 2] = dst[reverse_index + 2];
+        new_arr[i + 3] = dst[reverse_index + 3];
+    }
+
+    dst = new_arr;
+
     if (old_dst.length == 0) {
         old_dst = dst;
     }
@@ -119,6 +145,7 @@ onmessage = function(event) {
         dst[indexer(x, min_y)] = dst[indexer(x, max_y)] = 200;
     }
 
+
     vector = getMatrixPieces();
 
     min_x += ~~vector[0];
@@ -128,6 +155,7 @@ onmessage = function(event) {
 
 
     old_dst = dst;
+    imageData.data.set(dst,0);
 
     /* B&W */
     // for (var i=0; i < dst.length; i += 4) {
