@@ -164,6 +164,10 @@ onmessage = function(event) {
 
     postMessage({
         dstData: imageData,
-        vector: vector
+        vector: vector,
+        min_x: min_x,
+        min_y: min_y,
+        max_x: max_x,
+        max_y: max_y
     });
 };

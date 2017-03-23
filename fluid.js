@@ -217,12 +217,32 @@
     }
 
     function addMotionVector(ux, uy){
-        for (var x = ((WIDTH / 2) - 3); x < ((WIDTH / 2) + 3); x++) {
-            for (var y = (HEIGHT / 2) - 3; y < (HEIGHT / 2) + 3; y++) {
-                ux(x, y, ux(x, y)+vector[0]*2);
-                uy(x, y, uy(x, y)+vector[1]*2);
+        // What happens if we make this an obstacle
+
+        // var max_x = (WIDTH / 2) + 3;
+        // var min_x = (WIDTH / 2) - 3;
+        // var min_y  = (HEIGHT / 2) + 23;
+        // var max_y = (HEIGHT / 2) + 30;
+        // min_x = ~~((min_x / 128) * 512);
+        // min_y = ~~((min_y / 128) * 512);
+        max_x = min_x + 5;
+        max_y = min_y + 5;
+
+        for (var x = min_x; x <= max_x ; x++) {
+            for (var y = min_y; y <= max_y ; y++) {
+                uy(x, y, 0) ;
+                uy(x, y, 0) ;
             }
         }
+
+        // This makes wind
+        for (var x = min_x; x < max_x ; x++) {
+            for (var y = min_y; y < max_y; y++) {
+                ux(x, y, ux(x, y)+vector[0]/2);
+                uy(x, y, uy(x, y)+vector[1]/2);
+            }
+        }
+
     }
 
     function addMouseForce(ux, uy){
@@ -391,6 +411,7 @@
     function draw(ux, uy, p, s, t){
         var d = imageData.data,
             di, pi, ui;
+        console.log([min_x, min_y, max_x, max_y, WIDTH, HEIGHT]);
         for(var y = 0; y < HEIGHT; y++) {
             for(var x = 0; x < WIDTH; x++) {
                 pi = (y*WIDTH+x);
@@ -401,8 +422,20 @@
                 d[di+0] = uclr;
                 d[di+1] = sclr;
                 d[di+2] = tclr;
+
+                if ((x > min_x) && x < max_x && y > min_y && y < max_y) {
+                d[di+0] = 100;
+                d[di+1] = 100;
+                d[di+2] = 100;
+                }
             }
         }
+        // for (var x = min_x; x < max_x ; x++) {
+        //     for (var y = min_y; y < max_y; y++) {
+        //         ux(x, y, ux(x, y)+vector[0]*2);
+        //         uy(x, y, uy(x, y)+vector[1]*2);
+        //     }
+        // }
         ctx.putImageData(imageData, 0, 0);
     }
 

@@ -15,15 +15,17 @@
 
     <script type="text/javascript">
         var vector = [0, 0];
+        var min_x = min_y = max_x = max_y = 0;
         (function(){
             var video = document.getElementById('video-stream'),
                 canvas = document.getElementById('canvas-video'),
                 canvasEffect = document.getElementById('canvas-effects'),
                 ctx = canvas.getContext('2d'),
                 ctxEffects = canvasEffect.getContext('2d'),
-                processor = new Worker('image-worker.js');
                 // Maybe something like this
-                // new Worker(URL.createObjectURL(new Blob(["("+worker_function.toString()+")()"], {type: 'text/javascript'})));
+
+                processor = new Worker('./image-worker.js');
+                // processor = new Worker(URL.createObjectURL(new Blob(["("+worker_function.toString()+")()"], {type: 'text/javascript'})));
                 // Blobs are like this
                 // var myBlob = new Blob(["This is my blob content"], {type : "text/plain"});
 
@@ -31,10 +33,15 @@
                 h = video.height;
 
 
+
             /* Setup WebWorker messaging */
             processor.onmessage = function(event){
                 ctxEffects.putImageData(event.data.dstData, 0, 0);
                 vector = event.data.vector;
+                min_x = event.data.min_x;
+                min_y = event.data.min_y;
+                max_x = event.data.max_x;
+                max_y = event.data.max_y;
             };
 
             /* Setup video stream and canvas */
