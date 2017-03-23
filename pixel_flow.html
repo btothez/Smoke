@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>WebCam Effects</title>
-     <script src="./node_modules/mathjs/dist/math.js" type="text/javascript"></script>
 </head>
 <body>
                 
@@ -23,6 +22,11 @@
                 ctx = canvas.getContext('2d'),
                 ctxEffects = canvasEffect.getContext('2d'),
                 processor = new Worker('image-worker.js');
+                // Maybe something like this
+                // new Worker(URL.createObjectURL(new Blob(["("+worker_function.toString()+")()"], {type: 'text/javascript'})));
+                // Blobs are like this
+                // var myBlob = new Blob(["This is my blob content"], {type : "text/plain"});
+
                 w = video.width,
                 h = video.height;
 
