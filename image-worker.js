@@ -157,11 +157,6 @@ onmessage = function(event) {
     old_dst = dst;
     imageData.data.set(dst,0);
 
-    /* B&W */
-    // for (var i=0; i < dst.length; i += 4) {
-    //     dst[i+1] = dst[i+2] = dst[i];
-    // }
-
     postMessage({
         dstData: imageData,
         vector: vector,

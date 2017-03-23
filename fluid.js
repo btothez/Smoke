@@ -411,7 +411,6 @@
     function draw(ux, uy, p, s, t){
         var d = imageData.data,
             di, pi, ui;
-        console.log([min_x, min_y, max_x, max_y, WIDTH, HEIGHT]);
         for(var y = 0; y < HEIGHT; y++) {
             for(var x = 0; x < WIDTH; x++) {
                 pi = (y*WIDTH+x);
