@@ -126,6 +126,8 @@
         // needs an even number of iterations
         computeDivergence(u1x, u1y, div);
         fastjacobi(p0, p1, div, -1, 0.20, 86);
+        pressureboundary(p1);
+
         subtractPressureGradient(u1x, u1y, p1);
 
 
@@ -370,10 +372,6 @@
         p0 = p0.a;
         p1 = p1.a;
         b = b.a;
-        //for(var i = 0; i < pressureField0.length; i++) {
-            //pressureField0[i] = 0.5;
-            //pressureField1[i] = pressureField0[i];
-        //}
 
         for(i = 0; i < iterations; i++) {
             for(var y = 1; y < HEIGHT-1; y++) {
@@ -389,7 +387,7 @@
             var aux = p0;
             p0 = p1;
             p1 = aux;
-            //pressureboundary(p0);
+            // pressureboundary(p0);
         }
     }
 
